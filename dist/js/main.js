@@ -1,7 +1,9 @@
 import {
   setLocationObject,
   getHomeLocation,
+  getCoordsFromApi,
   cleanText,
+  getWeatherFromCoords,
 } from "./dataFunctions.js";
 import {
   setPlaceholderText,
@@ -9,6 +11,7 @@ import {
   displayError,
   displayApiError,
   updateScreenReaderConfirmation,
+  updateDisplay,
 } from "./domFunctions.js";
 import CurrentLocation from "./CurrentLocation.js";
 const currentLoc = new CurrentLocation();
@@ -134,27 +137,36 @@ const refreshWeather = () => {
 
 const submitNewLocation = async (event) => {
   event.preventDefault();
+
   const text = document.getElementById("searchBar__text").value;
   const entryText = cleanText(text);
 
   if (!entryText.length) return;
-
   const locationIcon = document.querySelector(".fa-search");
   addSpinner(locationIcon);
   const coordsData = await getCoordsFromApi(entryText, currentLoc.getUnit());
-  //work with api data
-  if (coordsData.cod === 200) {
-    //succes
-    const myCoordsObj = {};
-    setLocationObject(currentLoc, myCoordsObj);
-    updateDataAndDisplay(currentLoc);
+
+  if (coordsData) {
+    if (coordsData.cod === 200) {
+      const myCoordsObj = {
+        lat: coordsData.coord.lat,
+        lon: coordsData.coord.lon,
+        name: coordsData.sys.country
+          ? `${coordsData.name}, ${coordsData.sys.country}`
+          : coordsData.name,
+      };
+      setLocationObject(currentLoc, myCoordsObj);
+      updateDataAndDisplay(currentLoc);
+    } else {
+      displayApiError(coordsData);
+    }
   } else {
-    displayApiError(coordsData);
+    displayError("Connection Error", "Connection Error");
   }
 };
 
 const updateDataAndDisplay = async (locationObj) => {
-  console.log(locationObj);
-  // const weatherJson = await getWeatherFromCoords(locationObj);
-  // if (weatherJson) updateDisplay(weatherJson, locationObj);
+  const weatherJson = await getWeatherFromCoords(locationObj);
+  console.log(weatherJson);
+  if (weatherJson) updateDisplay(weatherJson, locationObj);
 };
