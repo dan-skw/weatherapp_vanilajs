@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/dan-skw/weatherapp_vanilajs#readme",
   "dependencies": {
-    "node-fetch": "^3.2.9",
+    "node-fetch": "^2.6.1",
     "source-map-resolve": "^0.6.0"
   }
 }

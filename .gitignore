@@ -1,6 +1,4 @@
-#Visual Studio Code
-.vscode
-#Prettier
-.prettierignore
-#node
 node_modules
+
+# Local Netlify folder
+.netlify
