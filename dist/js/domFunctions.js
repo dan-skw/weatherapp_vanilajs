@@ -24,7 +24,6 @@ export const displayError = (headerMsg, scrnreaderMsg) => {
 export const displayApiError = (statusCode) => {
   const properMsg = toProperCase(statusCode.message);
   updateWeatherLocationHeader(properMsg);
-  updateScreenReaderConfirmation(properMsg);
   updateScreenReaderConfirmation(`${properMsg}. Please try again.`);
 };
 
@@ -150,10 +149,9 @@ const buildScreenReaderWeather = (weatherJson, locationObj) => {
   const location = locationObj.getName();
   const unit = locationObj.getUnit();
   const tempUnit = unit === "imperial" ? "F" : "C";
-  return `${weatherJson.current.weather[0].description} and 
-          ${Math.round(
-            Number(weatherJson.current.temp)
-          )}°${tempUnit} in ${location}`;
+  return `${weatherJson.current.weather[0].description} and ${Math.round(
+    Number(weatherJson.current.temp)
+  )}°${tempUnit} in ${location}`;
 };
 
 const setFocusOnSearch = () => {
