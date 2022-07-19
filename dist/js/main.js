@@ -1,9 +1,9 @@
 import {
   setLocationObject,
   getHomeLocation,
+  getWeatherFromCoords,
   getCoordsFromApi,
   cleanText,
-  getWeatherFromCoords,
 } from "./dataFunctions.js";
 import {
   setPlaceholderText,

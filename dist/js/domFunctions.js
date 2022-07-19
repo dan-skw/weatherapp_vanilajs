@@ -39,7 +39,25 @@ const toProperCase = (text) => {
 
 const updateWeatherLocationHeader = (message) => {
   const h1 = document.getElementById("currentForecast__location");
-  h1.textContent = message;
+  if (message.indexOf("Lat:") !== -1 && message.indexOf("Long:") !== -1) {
+    const msgArray = message.split(" ");
+    const mapArray = msgArray.map((msg) => {
+      return msg.replace(":", ": ");
+    });
+    const lat =
+      mapArray[0] +
+      (mapArray[1].indexOf("-") === -1
+        ? mapArray[1].slice(0, 5)
+        : mapArray[1].slice(0, 6));
+    const lon =
+      mapArray[2] +
+      (mapArray[3].indexOf("-") === -1
+        ? mapArray[3].slice(0, 5)
+        : mapArray[3].slice(0, 6));
+    h1.textContent = `${lat} • ${lon}`;
+  } else {
+    h1.textContent = message;
+  }
 };
 
 export const updateScreenReaderConfirmation = (message) => {
@@ -53,7 +71,7 @@ export const updateDisplay = (weatherJson, locationObj) => {
   const weatherClass = getWeatherClass(weatherJson.current.weather[0].icon);
   setBGImage(weatherClass);
 
-  const buildScreenReaderWeather = buildScreenReaderWeather(
+  const screenReaderWeather = buildScreenReaderWeather(
     weatherJson,
     locationObj
   );
@@ -66,7 +84,8 @@ export const updateDisplay = (weatherJson, locationObj) => {
     locationObj.getUnit()
   );
 
-  displayCurrentConditions(currentCondArray);
+  displayCurrentConditions(currConditionsArray);
+  displaySixDayForecast(weatherJson);
   setFocusOnSearch();
   fadeDisplay();
 };
@@ -152,7 +171,8 @@ const createCurrentConditionsDivs = (weatherObj, unit) => {
   const temp = createElem(
     "div",
     "temp",
-    `${Math.round(Number(weatherObj.current.temp))}°`
+    `${Math.round(Number(weatherObj.current.temp))}°`,
+    tempUnit
   );
   const properDesc = toProperCase(weatherObj.current.weather[0].description);
   const desc = createElem("div", "desc", properDesc);
@@ -163,12 +183,12 @@ const createCurrentConditionsDivs = (weatherObj, unit) => {
   );
   const maxTemp = createElem(
     "div",
-    "maxtemp",
+    "maxTemp",
     `High ${Math.round(Number(weatherObj.daily[0].temp.max))}°`
   );
   const minTemp = createElem(
     "div",
-    "mintemp",
+    "minTemp",
     `Low ${Math.round(Number(weatherObj.daily[0].temp.min))}°`
   );
   const humidity = createElem(
@@ -203,7 +223,7 @@ const createElem = (elemType, divClassName, divText, unit) => {
   }
   if (divClassName === "temp") {
     const unitDiv = document.createElement("div");
-    unitDiv.className("unit");
+    unitDiv.className = "unit";
     unitDiv.textContent = unit;
     div.appendChild(unitDiv);
   }
@@ -280,4 +300,66 @@ const displayCurrentConditions = (currentCondArray) => {
   currentCondArray.forEach((cc) => {
     currCondContainer.appendChild(cc);
   });
+};
+
+const displaySixDayForecast = (weatherJson) => {
+  for (let i = 1; i <= 6; i++) {
+    const dailyForecastArray = createDailyForecastDivs(weatherJson.daily[i]);
+    displayDailyForecast(dailyForecastArray);
+  }
+};
+
+const createDailyForecastDivs = (dayWeather) => {
+  const dayAbbreviationText = getDayAbbreviation(dayWeather.dt);
+  const dayAbbreviation = createElem(
+    "p",
+    "dayAbbreviation",
+    dayAbbreviationText
+  );
+
+  const dayIcon = createDailyForecastIcon(
+    dayWeather.weather[0].icon,
+    dayWeather.weather[0].description
+  );
+  const dayHigh = createElem(
+    "p",
+    "dayhigh",
+    `${Math.round(Number(dayWeather.temp.max))}°`
+  );
+  const dayLow = createElem(
+    "p",
+    "daylow",
+    `${Math.round(Number(dayWeather.temp.min))}°`
+  );
+
+  return [dayAbbreviation, dayIcon, dayHigh, dayLow];
+};
+
+const getDayAbbreviation = (data) => {
+  const dateObj = new Date(data * 1000);
+  const utcString = dateObj.toUTCString();
+  return utcString.slice(0, 3).toUpperCase();
+};
+
+const createDailyForecastIcon = (icon, altText) => {
+  const img = document.createElement("img");
+  if (window.innerWidth < 768 || window.innerHeight < 1025) {
+    img.src = `https://openweathermap.org/img/wn/${icon}.png`;
+  } else {
+    img.src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+  }
+  img.alt = altText;
+
+  return img;
+};
+
+const displayDailyForecast = (dfArray) => {
+  const dayDiv = createElem("div", "forecastDay");
+  dfArray.forEach((element) => {
+    dayDiv.appendChild(element);
+  });
+  const dailyForecastContainer = document.getElementById(
+    "dailyForecast__contents"
+  );
+  dailyForecastContainer.appendChild(dayDiv);
 };
