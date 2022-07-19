@@ -20,5 +20,8 @@
   "dependencies": {
     "node-fetch": "^2.6.1",
     "source-map-resolve": "^0.6.0"
+  },
+  "devDependencies": {
+    "package.json": "^2.0.1"
   }
 }
